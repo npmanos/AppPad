@@ -8,6 +8,7 @@ except ImportError:
 from apps.chrome import ChromeApp
 from apps.spotify import SpotifyApp
 from utils.app_pad import AppPad
+from utils.apps.base import BaseApp
 from utils.apps.key import Key, KeyApp, KeyAppSettings, MacroKey
 from utils.commands import (
     ConsumerControlCode,
@@ -36,6 +37,7 @@ from utils.constants import (
 )
 
 
+@BaseApp.register_app
 class AppSwitcherApp(KeyApp):
     """
     App with commands for switching between desktop apps. Some desktop apps

@@ -1,5 +1,6 @@
 # MACROPAD Hotkeys example: Function keys
 
+from utils.apps.base import BaseApp
 from utils.apps.key import Key, KeyApp
 from utils.commands import (
     ConsumerControlCode,
@@ -11,6 +12,7 @@ from utils.commands import (
 from utils.constants import COLOR_FUNC
 
 
+@BaseApp.register_app
 class FuncKeysApp(KeyApp):
     name = "Function Keys"
 

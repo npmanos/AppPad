@@ -14,6 +14,7 @@ from apps.numpad import NumpadApp
 from apps.switcher import AppSwitcherApp
 from apps.window import WindowManagementApp
 from utils.app_pad import AppPad
+from utils.apps.base import BaseApp
 from utils.apps.key import (
     Key,
     KeyApp,
@@ -44,6 +45,7 @@ from utils.constants import (
 )
 
 
+@BaseApp.register_app
 class MacroSettingsApp(KeyApp):
     name = "Macropad Settings"
 
@@ -58,6 +60,7 @@ class MacroSettingsApp(KeyApp):
     encoder_button = PreviousAppCommand()
 
 
+@BaseApp.register_app
 class HomeApp(KeyApp):
     """
     Main menu app that displays when starting the Macropad. Includes media
