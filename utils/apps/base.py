@@ -7,7 +7,7 @@ import os
 from utils.settings import BaseSettings
 
 try:
-    from typing import Iterable, List, Optional, Union
+    from typing import Iterable, List, Optional, Union, Dict
 except ImportError:
     pass
 
@@ -22,8 +22,9 @@ from utils.app_pad import (
     EncoderButtonEvent,
     EncoderEvent,
     KeyEvent,
+    SerialCommandEvent
 )
-from utils.constants import DISPLAY_HEIGHT, DISPLAY_WIDTH
+from utils.constants import DISPLAY_HEIGHT, DISPLAY_WIDTH, PREVIOUS_APP_SETTING, SERIAL_CHANGE_APP
 
 
 def init_display_group_base_app(
@@ -191,7 +192,7 @@ class BaseApp:
             self.macropad.pixels[i] = 0
 
     def process_event(
-        self, event: Union[DoubleTapEvent, EncoderButtonEvent, EncoderEvent, KeyEvent]
+        self, event: Union[DoubleTapEvent, EncoderButtonEvent, EncoderEvent, KeyEvent, SerialCommandEvent]
     ):
         """Process a single event.
 
@@ -207,6 +208,8 @@ class BaseApp:
             self.key_event(event)
         elif isinstance(event, DoubleTapEvent):
             self.double_tap_event(event)
+        elif isinstance(event, SerialCommandEvent):
+            self.serial_event(event)
 
     def encoder_event(self, event: EncoderEvent):
         """Process an encoder event.
@@ -240,3 +243,31 @@ class BaseApp:
             event (DoubleTapEvent): An event triggered by double-tapping a key
         """
         pass
+
+    def serial_event(self, event: SerialCommandEvent):
+        """Process a serial command event.
+        
+        Args:
+            event (SerialCommandEvent): An event triggered by receiving a serial command
+        """
+        print(f'Serial command: {event.command}, Arg: {event.arg}')
+
+        try:
+            from user import DEFAULT_APP
+        except ImportError:
+            from default_settings import DEFAULT_APP
+        
+        from utils.commands import AppSwitchException
+
+        if event.command == SERIAL_CHANGE_APP:
+            apps = BaseApp.dict_registered_apps()
+            try:
+                app_stack = self.settings[PREVIOUS_APP_SETTING]
+            except KeyError:
+                app_stack = []
+                self.settings[PREVIOUS_APP_SETTING] = app_stack
+            app_stack.append(self)
+            if event.arg in apps.keys():
+                raise AppSwitchException(apps[event.arg](self.app_pad, self.settings))
+            else:
+                raise AppSwitchException(DEFAULT_APP(self.app_pad, self.settings))
