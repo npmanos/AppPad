@@ -83,7 +83,7 @@ class BaseApp:
         return apps
 
     @staticmethod
-    def register_app(app_class: "BaseApp") -> "BaseApp":
+    def register_app(app_class: type["BaseApp"]) -> type["BaseApp"]:
         """Register the specified app to the internal app list.
 
         Intended to be used as a decorator.
@@ -102,7 +102,7 @@ class BaseApp:
         return app_class
 
     @staticmethod
-    def list_registered_apps() -> List["BaseApp"]:
+    def list_registered_apps() -> List[type["BaseApp"]]:
         """Return a list of the apps that have been registered.
 
         Returns:
@@ -113,6 +113,19 @@ class BaseApp:
             return list(sorted(BaseApp._registered_apps, key=lambda app: app.name))
         except AttributeError:
             return []
+        
+    @staticmethod
+    def dict_registered_apps() -> Dict[str, type["BaseApp"]]:
+        """Return a dict of the apps that have been registered with their name as key.
+
+        Returns:
+            Dict[BaseApp]: A dict of apps that have been registered,
+                           keyed by name
+        """
+        try:
+            return {app.name: app for app in sorted(BaseApp._registered_apps, key=lambda app: app.name)}
+        except AttributeError:
+            return {}
 
     def __init__(self, app_pad: AppPad, settings: Optional[BaseSettings] = None):
         """Initialize the App.
