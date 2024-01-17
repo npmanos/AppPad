@@ -92,16 +92,17 @@ class AppSwitcherApp(KeyApp):
         mac_command=Press(Keycode.COMMAND, Keycode.OPTION, Keycode.CONTROL, Keycode.M),
     )
 
-    key_9 = MacroKey(
-        "Chrome",
-        COLOR_CHROME,
-        Sequence(
-            Press(Keycode.WINDOWS, Keycode.ONE),
-            Wait(0.1),
-            Release(Keycode.ONE, Keycode.WINDOWS),
-        ),
-        mac_command=Press(Keycode.COMMAND, Keycode.CONTROL, Keycode.OPTION, Keycode.C),
-    )
+    # key_9 = MacroKey(
+    #     "Chrome",
+    #     COLOR_CHROME,
+    #     SwitchAppCommand(ChromeApp(self._app_pad))
+    #     # Sequence(
+    #     #     Press(Keycode.WINDOWS, Keycode.ONE),
+    #     #     Wait(0.1),
+    #     #     Release(Keycode.ONE, Keycode.WINDOWS),
+    #     # ),
+    #     # mac_command=Press(Keycode.COMMAND, Keycode.CONTROL, Keycode.OPTION, Keycode.C),
+    # )
     key_10 = MacroKey(
         "Notion",
         COLOR_NOTION,
@@ -122,6 +123,12 @@ class AppSwitcherApp(KeyApp):
 
     def __init__(self, app_pad: AppPad, settings: Optional[KeyAppSettings] = None):
         self.initialize_settings_dependent_keys(app_pad, settings)
+        self.key_9 = MacroKey(
+            "Chrome",
+            COLOR_CHROME,
+            SwitchAppCommand(ChromeApp(app_pad, settings)),
+            mac_command=SwitchAppCommand(ChromeApp(app_pad, settings))
+        )
         super().__init__(app_pad, settings=settings)
 
     @classmethod
@@ -157,14 +164,16 @@ class AppSwitcherApp(KeyApp):
         cls.key_9 = MacroKey(
             "Chrome",
             COLOR_CHROME,
-            Sequence(
-                Press(Keycode.WINDOWS, Keycode.ONE),
-                Wait(0.1),
-                Release(Keycode.ONE, Keycode.WINDOWS),
-            ),
-            mac_command=Press(
-                Keycode.COMMAND, Keycode.CONTROL, Keycode.OPTION, Keycode.C
-            ),
+            SwitchAppCommand(chrome_app),
+            # Sequence(
+            #     Press(Keycode.WINDOWS, Keycode.ONE),
+            #     Wait(0.1),
+            #     Release(Keycode.ONE, Keycode.WINDOWS),
+            # ),
+            mac_command=SwitchAppCommand(chrome_app),
+            # mac_command=Press(
+            #     Keycode.COMMAND, Keycode.CONTROL, Keycode.OPTION, Keycode.C
+            # ),
             double_tap_command=MacroCommand(
                 Sequence(
                     Press(Keycode.WINDOWS, Keycode.ONE),
