@@ -13,6 +13,11 @@ from utils.commands import AppSwitchException
 from utils.constants import OS_LINUX, OS_MAC, OS_WINDOWS
 
 try:
+    from typing import Literal
+except ImportError:
+    pass
+
+try:
     from user import DEFAULT_APP
 except ImportError:
     from default_settings import DEFAULT_APP
@@ -22,21 +27,28 @@ try:
 except ImportError:
     from default_settings import AppSettings
 
-datacom: Serial = usb_cdc.data  # type: ignore
-datacom.write(b"?os")
-datacom.flush()
-host_os: str = datacom.readline().decode().rstrip('\r\n') #type: ignore
-print(host_os)
+def get_os() -> Literal['LIN', 'MAC', 'WIN']:
+    datacom: Serial = usb_cdc.data  # type: ignore
+    datacom.write(b"?os")
+    datacom.flush()
+    host_os: str = datacom.readline().decode().rstrip('\r\n')  # type: ignore
+    print(host_os)
 
-if host_os.startswith("!os="):
-    _, host_os = host_os.split('=', 1)
+    if host_os.startswith("!os="):
+        _, host_os = host_os.split('=', 1)
 
-if host_os not in [OS_LINUX, OS_MAC, OS_WINDOWS]:
-    host_os = OS_MAC
+    if host_os not in [OS_LINUX, OS_MAC, OS_WINDOWS]:
+        host_os = OS_MAC
+    
+    return host_os #type: ignore
 
-BaseApp.load_apps('/apps')
 
 app_pad = AppPad()
+text_lines = app_pad.macropad.display_text(title='AppPad RP2040 v1.0-nightly')
+text_lines[2].text = 'Connecting...'.center(80)
+text_lines.show()
+
+host_os = get_os()
 current_app: BaseApp = DEFAULT_APP(app_pad, AppSettings(host_os=host_os))
 
 try:
