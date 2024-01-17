@@ -82,4 +82,4 @@ class AppSettings(KeyAppSettings):
     host_os = OS_WINDOWS
 
 
-DEFAULT_APP = lambda app_pad: HomeApp(app_pad, AppSettings())
+DEFAULT_APP = lambda app_pad, settings=AppSettings(): HomeApp(app_pad, settings)
