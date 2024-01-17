@@ -39,6 +39,8 @@ from utils.constants import (
     COLOR_WARNING,
     COLOR_WINDOWS,
     COLOR_WINMAN,
+    ONE_MINUTE,
+    OS_MAC,
     OS_WINDOWS,
 )
 
@@ -79,7 +81,8 @@ class AppSettings(KeyAppSettings):
         COLOR_SUBLIME_MERGE: 0x00B3B3,
         COLOR_TERMINAL: COLOR_10,
     }
-    host_os = OS_WINDOWS
+    host_os = OS_MAC
+    pixels_disabled_timeout = 2 * ONE_MINUTE
 
 
 DEFAULT_APP = lambda app_pad, settings=AppSettings(): HomeApp(app_pad, settings)
