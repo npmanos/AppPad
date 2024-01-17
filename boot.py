@@ -1,8 +1,12 @@
-from usb_cdc import Serial
-from apps.home import HomeApp
+from board import DISPLAY as display
+from displayio import Group
 import usb_cdc
 import supervisor
-import default_settings
+
+
+display.auto_refresh = False
+display.root_group = Group()
+display.refresh()
 
 supervisor.runtime.autoreload = False
 supervisor.set_usb_identification("Manos Technologies", "AppPad RP2040")
