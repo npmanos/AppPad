@@ -5,6 +5,7 @@ It enables you to more easily create complex layouts and has other advanced
 features, including double-tap support.
 """
 
+import os
 import usb_cdc
 from usb_cdc import Serial
 from utils.app_pad import AppPad
@@ -27,7 +28,14 @@ try:
 except ImportError:
     from default_settings import AppSettings
 
+debug = os.getenv("DEBUG", "false").lower() == "true"
+
 def get_os() -> Literal['LIN', 'MAC', 'WIN']:
+    if debug:
+        debug_os = os.getenv("DEBUG_OS_OVERRIDE")
+        if debug_os is not None:
+            return debug_os #type: ignore
+
     datacom: Serial = usb_cdc.data  # type: ignore
     datacom.write(b"?os")
     datacom.flush()
