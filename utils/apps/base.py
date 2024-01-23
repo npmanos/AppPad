@@ -117,15 +117,15 @@ class BaseApp:
             return []
         
     @staticmethod
-    def dict_registered_apps() -> Dict[str, type["BaseApp"]]:
+    def dict_serial_name_apps() -> Dict[str, type["BaseApp"]]:
         """Return a dict of the apps that have been registered with their name as key.
 
         Returns:
             Dict[BaseApp]: A dict of apps that have been registered,
-                           keyed by name
+                           keyed by serial_name
         """
         try:
-            return {app.name: app for app in sorted(BaseApp._registered_apps, key=lambda app: app.name)}
+            return {app.serial_name: app for app in BaseApp._registered_apps}
         except AttributeError:
             return {}
 
@@ -144,6 +144,9 @@ class BaseApp:
             self.settings = BaseSettings()
         else:
             self.settings = settings
+
+        if self.serial_name is None:
+            self.serial_name = self.name
 
     def run(self):
         """The main run loop for the app.
@@ -261,7 +264,7 @@ class BaseApp:
         from utils.commands import AppSwitchException
 
         if event.command == SERIAL_CHANGE_APP:
-            apps = BaseApp.dict_registered_apps()
+            apps = BaseApp.dict_serial_name_apps()
             try:
                 app_stack = self.settings[PREVIOUS_APP_SETTING]
             except KeyError:
