@@ -49,6 +49,7 @@ def init_display_group_base_app(
 class BaseApp:
     display_group = init_display_group_base_app(DISPLAY_WIDTH, DISPLAY_HEIGHT)
     name = "Base App"
+    serial_name: str = None #type: ignore
 
     @staticmethod
     def load_apps(directory: str) -> Iterable["BaseApp"]:
