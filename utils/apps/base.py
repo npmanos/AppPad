@@ -5,6 +5,7 @@ Includes a BaseApp implementation which handles the basic app run loop.
 import os
 
 from utils.settings import BaseSettings
+from utils.util_funcs import classproperty
 
 try:
     from typing import Iterable, List, Optional, Union, Dict
@@ -49,7 +50,15 @@ def init_display_group_base_app(
 class BaseApp:
     display_group = init_display_group_base_app(DISPLAY_WIDTH, DISPLAY_HEIGHT)
     name = "Base App"
-    serial_name: str = None #type: ignore
+    _serial_name: Optional[str] = None
+
+    @classproperty
+    def serial_name(cls) -> str:
+        return cls._serial_name if cls._serial_name is not None else cls.name
+    
+    @serial_name.setter
+    def serial_name(cls, value: str):
+        cls._serial_name = value
 
     @staticmethod
     def load_apps(directory: str) -> Iterable["BaseApp"]:
@@ -144,9 +153,6 @@ class BaseApp:
             self.settings = BaseSettings()
         else:
             self.settings = settings
-
-        if self.serial_name is None:
-            self.serial_name = self.name
 
     def run(self):
         """The main run loop for the app.
