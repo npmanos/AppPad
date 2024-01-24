@@ -1,5 +1,6 @@
 """Hotkeys for Spotify."""
 
+from utils.apps.base import BaseApp
 from utils.apps.key import Key, KeyApp, MacroKey
 from utils.commands import (
     ConsumerControlCode,
@@ -20,6 +21,7 @@ from utils.constants import (
 )
 
 
+@BaseApp.register_app
 class SpotifyApp(KeyApp):
     name = "Spotify"
 

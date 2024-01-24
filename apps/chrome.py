@@ -20,10 +20,13 @@ from utils.constants import (
     COLOR_CLOSE,
     OS_MAC,
 )
+from utils.apps.base import BaseApp
 
 
+@BaseApp.register_app
 class ChromeApp(KeyApp):
     name = "Chrome"
+    serial_name: str = "Google Chrome"
 
     # First row
     key_0 = MacroKey(

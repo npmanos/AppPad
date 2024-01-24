@@ -14,6 +14,9 @@ except ImportError:
     pass
 
 from adafruit_macropad import MacroPad
+import usb_cdc
+
+data: usb_cdc.Serial = usb_cdc.data # type: ignore
 
 # Event indicating the Encoder Button was pressed or released.
 EncoderButtonEvent = namedtuple("EncoderButtonEvent", ("pressed",))
@@ -29,6 +32,10 @@ KeyEvent = namedtuple("KeyEvent", ("number", "pressed"))
 
 # Event indicating a key was tapped twice quickly.
 DoubleTapEvent = namedtuple("DoubleTapEvent", ("number", "pressed"))
+
+
+# Event indicating a serial command was receieved.
+SerialCommandEvent = namedtuple("SerialCommandEvent", ("command", "arg"))
 
 
 class DoubleTapBuffer:
@@ -260,21 +267,27 @@ class AppPad:
 
     def event_stream(
         self,
-    ) -> Iterable[Union[DoubleTapEvent, EncoderButtonEvent, EncoderEvent, KeyEvent]]:
+    ) -> Iterable[Union[DoubleTapEvent, EncoderButtonEvent, EncoderEvent, KeyEvent, SerialCommandEvent]]:
         while True:
             yield from self.check_events()
 
     def check_events(
         self,
-    ) -> Iterable[Union[DoubleTapEvent, EncoderButtonEvent, EncoderEvent, KeyEvent]]:
+    ) -> Iterable[Union[DoubleTapEvent, EncoderButtonEvent, EncoderEvent, KeyEvent, SerialCommandEvent]]:
         """Check for changes in state and return a tuple of events.
 
         Also execute any timers that are scheduled to run.
 
         Returns:
-            Tuple[Union[DoubleTapEvent, EncoderButtonEvent, EncoderEvent, KeyEvent], ...]:
+            Tuple[Union[DoubleTapEvent, EncoderButtonEvent, EncoderEvent, KeyEvent, SerialCommandEvent], ...]:
                 A tuple of Events.
         """
+        if data.in_waiting > 0:
+            raw_input = data.readline().decode().rstrip('\r\n') #type: ignore
+            if raw_input.find('=') != -1:
+                command, arg = raw_input.split('=', 1)
+                yield SerialCommandEvent(command=command, arg=arg)
+
         position = self.encoder_position
         if position != self._last_encoder_position:
             last_encoder_position = self._last_encoder_position

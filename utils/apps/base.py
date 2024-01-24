@@ -5,9 +5,10 @@ Includes a BaseApp implementation which handles the basic app run loop.
 import os
 
 from utils.settings import BaseSettings
+from utils.util_funcs import classproperty
 
 try:
-    from typing import Iterable, List, Optional, Union
+    from typing import Iterable, List, Optional, Union, Dict
 except ImportError:
     pass
 
@@ -22,8 +23,9 @@ from utils.app_pad import (
     EncoderButtonEvent,
     EncoderEvent,
     KeyEvent,
+    SerialCommandEvent
 )
-from utils.constants import DISPLAY_HEIGHT, DISPLAY_WIDTH
+from utils.constants import DISPLAY_HEIGHT, DISPLAY_WIDTH, PREVIOUS_APP_SETTING, SERIAL_CHANGE_APP
 
 
 def init_display_group_base_app(
@@ -48,6 +50,15 @@ def init_display_group_base_app(
 class BaseApp:
     display_group = init_display_group_base_app(DISPLAY_WIDTH, DISPLAY_HEIGHT)
     name = "Base App"
+    _serial_name: Optional[str] = None
+
+    @classproperty
+    def serial_name(cls) -> str:
+        return cls._serial_name if cls._serial_name is not None else cls.name
+    
+    @serial_name.setter
+    def serial_name(cls, value: str):
+        cls._serial_name = value
 
     @staticmethod
     def load_apps(directory: str) -> Iterable["BaseApp"]:
@@ -83,7 +94,7 @@ class BaseApp:
         return apps
 
     @staticmethod
-    def register_app(app_class: "BaseApp") -> "BaseApp":
+    def register_app(app_class: type["BaseApp"]) -> type["BaseApp"]:
         """Register the specified app to the internal app list.
 
         Intended to be used as a decorator.
@@ -102,7 +113,7 @@ class BaseApp:
         return app_class
 
     @staticmethod
-    def list_registered_apps() -> List["BaseApp"]:
+    def list_registered_apps() -> List[type["BaseApp"]]:
         """Return a list of the apps that have been registered.
 
         Returns:
@@ -113,6 +124,19 @@ class BaseApp:
             return list(sorted(BaseApp._registered_apps, key=lambda app: app.name))
         except AttributeError:
             return []
+        
+    @staticmethod
+    def dict_serial_name_apps() -> Dict[str, type["BaseApp"]]:
+        """Return a dict of the apps that have been registered with their name as key.
+
+        Returns:
+            Dict[BaseApp]: A dict of apps that have been registered,
+                           keyed by serial_name
+        """
+        try:
+            return {app.serial_name: app for app in BaseApp._registered_apps}
+        except AttributeError:
+            return {}
 
     def __init__(self, app_pad: AppPad, settings: Optional[BaseSettings] = None):
         """Initialize the App.
@@ -178,7 +202,7 @@ class BaseApp:
             self.macropad.pixels[i] = 0
 
     def process_event(
-        self, event: Union[DoubleTapEvent, EncoderButtonEvent, EncoderEvent, KeyEvent]
+        self, event: Union[DoubleTapEvent, EncoderButtonEvent, EncoderEvent, KeyEvent, SerialCommandEvent]
     ):
         """Process a single event.
 
@@ -194,6 +218,8 @@ class BaseApp:
             self.key_event(event)
         elif isinstance(event, DoubleTapEvent):
             self.double_tap_event(event)
+        elif isinstance(event, SerialCommandEvent):
+            self.serial_event(event)
 
     def encoder_event(self, event: EncoderEvent):
         """Process an encoder event.
@@ -227,3 +253,31 @@ class BaseApp:
             event (DoubleTapEvent): An event triggered by double-tapping a key
         """
         pass
+
+    def serial_event(self, event: SerialCommandEvent):
+        """Process a serial command event.
+        
+        Args:
+            event (SerialCommandEvent): An event triggered by receiving a serial command
+        """
+        print(f'Serial command: {event.command}, Arg: {event.arg}')
+
+        try:
+            from user import DEFAULT_APP
+        except ImportError:
+            from default_settings import DEFAULT_APP
+        
+        from utils.commands import AppSwitchException
+
+        if event.command == SERIAL_CHANGE_APP:
+            apps = BaseApp.dict_serial_name_apps()
+            try:
+                app_stack = self.settings[PREVIOUS_APP_SETTING]
+            except KeyError:
+                app_stack = []
+                self.settings[PREVIOUS_APP_SETTING] = app_stack
+            app_stack.append(self)
+            if event.arg in apps.keys():
+                raise AppSwitchException(apps[event.arg](self.app_pad, self.settings))
+            else:
+                raise AppSwitchException(DEFAULT_APP(self.app_pad, self.settings))

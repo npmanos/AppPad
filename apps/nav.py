@@ -1,5 +1,6 @@
 # Nav cluster
 
+from utils.apps.base import BaseApp
 from utils.apps.key import Key, KeyApp, MacroKey
 from utils.commands import (
     ConsumerControlCode,
@@ -11,6 +12,7 @@ from utils.commands import (
 from utils.constants import COLOR_2, COLOR_4, COLOR_8, COLOR_ALERT, COLOR_NAV
 
 
+@BaseApp.register_app
 class NavApp(KeyApp):
     name = "Navigation"
 

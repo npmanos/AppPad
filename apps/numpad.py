@@ -1,5 +1,6 @@
 # MACROPAD Hotkeys example: Universal Numpad
 
+from utils.apps.base import BaseApp
 from utils.apps.key import Key, KeyApp
 from utils.commands import (
     ConsumerControlCode,
@@ -12,6 +13,7 @@ from utils.commands import (
 from utils.constants import COLOR_8, COLOR_NUMPAD, COLOR_WARNING
 
 
+@BaseApp.register_app
 class NumpadApp(KeyApp):
     name = "Numpad"
 

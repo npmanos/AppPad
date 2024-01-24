@@ -1,10 +1,12 @@
 """App with macros for managing windows and virtual desktops."""
 
+from utils.apps.base import BaseApp
 from utils.apps.key import KeyApp, MacroKey
 from utils.commands import Keycode, Press, PreviousAppCommand
 from utils.constants import COLOR_2, COLOR_3, COLOR_WINMAN
 
 
+@BaseApp.register_app
 class WindowManagementApp(KeyApp):
     name = "Window Manager"
 
